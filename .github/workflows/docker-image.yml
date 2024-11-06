@@ -30,16 +30,16 @@ jobs:
       with:
         push: true
         tags: |
-          ${{ secrets.DOCKER_USER }}/venture-workshop-g:latest
-          ${{ secrets.DOCKER_USER }}/venture-workshop-g:${{ github.sha }}
+          ${{ secrets.DOCKER_USER }}/bada:latest
+          ${{ secrets.DOCKER_USER }}/bada:${{ github.sha }}
         platforms: linux/amd64,linux/arm64
-        cache-from: type=registry,ref=${{ secrets.DOCKER_USER }}/venture-workshop-g:cache
+        cache-from: type=registry,ref=${{ secrets.DOCKER_USER }}/bada:cache
         cache-to: type=inline
 
     - name: Security Scan with Trivy
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: ${{ secrets.DOCKER_USER }}/venture-workshop-g:latest
+        image-ref: ${{ secrets.DOCKER_USER }}/bada:latest
 
     - name: Image digest
       run: echo "Image digest is ${{ steps.docker_build.outputs.digest }}"
