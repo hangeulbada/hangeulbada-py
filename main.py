@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from openai import OpenAI
 from pydantic import BaseModel, Field
 import os
 from dotenv import load_dotenv
