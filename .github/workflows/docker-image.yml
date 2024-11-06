@@ -55,8 +55,14 @@ jobs:
         run: sudo docker pull ${{ secrets.DOCKER_USER }}/bada-py
 
       # 2. 기존의 컨테이너를 중지시킵니다
-      - name: docker stop container
-        run: sudo docker stop bada-py-server
+      - name: Stop container if running
+        run: |
+          if [ "$(sudo docker ps -q -f name=bada-py-server)" ]; then
+            echo "Stopping container bada-py-server..."
+            sudo docker stop bada-py-server
+          else
+            echo "Container bada-py-server is not running. Skipping stop command."
+          fi
 
       - name: Create .env file
         run: echo "${{ secrets.BADA_PY_ENV }}" > ~/bada-py/.env
