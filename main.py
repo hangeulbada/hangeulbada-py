@@ -87,7 +87,7 @@ async def calc_difficulty(s: str):
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "한글바다 AI 서버입니다."}
 
 if __name__ == "__main__":
     import uvicorn
