@@ -1,11 +1,12 @@
 # Dockerfile
-FROM python:3.9
+FROM python:3.9-slim
 
-WORKDIR /
+WORKDIR /app/bada-py
 
 RUN pip freeze > requirements.txt
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
