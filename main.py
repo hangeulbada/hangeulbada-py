@@ -94,7 +94,7 @@ async def calc_difficulty(s: str):
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "한글바다 AI 서버입니다."}
 
 if __name__ == "__main__":
     import uvicorn
@@ -113,4 +113,3 @@ def difficulty_dec(s: str):
         if len(i) == 3:
             b_list.append(i[2])
     return b_list, m_list
-
