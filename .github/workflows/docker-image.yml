@@ -44,7 +44,7 @@ jobs:
     needs: build-docker-image
     runs-on: self-hosted
 
-    steps:
+    steps:    
       # 1. 최신 이미지를 풀받습니다
       - name: docker pull
         run: sudo docker pull ${{ secrets.DOCKER_USER }}/bada-py
@@ -67,5 +67,6 @@ jobs:
         run: sudo docker run --name bada-py-server --rm -d -p 8000:8000 --env-file ~/bada-py/.env ${{ secrets.DOCKER_USER }}/bada-py
 
       # # 4. 미사용 이미지를 정리합니다
-      # - name: delete old docker image
-      #   run: sudo docker system prune -f
+      - name: Clean up unused images
+        run: |
+          sudo docker image prune -af
