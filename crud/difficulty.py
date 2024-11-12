@@ -18,6 +18,6 @@ def decomposition(korean_word: str):
             res.append([CHOSUNG_LIST[ch1], JUNGSUNG_LIST[ch2], JONGSUNG_LIST[ch3]])
         else:
             res.append([w])
-    print (res)
+    # print (res)
     
     return res

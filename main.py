@@ -113,4 +113,3 @@ def difficulty_dec(s: str):
         if len(i) == 3:
             b_list.append(i[2])
     return b_list, m_list
-
