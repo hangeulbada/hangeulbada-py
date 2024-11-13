@@ -24,7 +24,6 @@ def analysis_gugaeumhwa(text, dec):
         if len(r)!=3: continue
         if i+1>=len(dec): continue
         if not (r[2]=='ㄷ' or r[2]=='ㅌ'): continue
-        print(r)
         if (text[i+1]=='이' or text[i+1]=='히'):
             gugaeumhwa.append(text[i:i+2])
 
@@ -32,7 +31,7 @@ def analysis_gugaeumhwa(text, dec):
 
 def analysis_beumhwa(text, dec):
     beumhwa=[]
-    payeoleum = ['ㅂ','ㄷ','ㄱ']
+    payeoleum = ['ㅂ','ㄷ','ㄱ', 'ㅍ','ㄼ','ㅄ','ㅅ','ㅆ','ㅈ','ㅊ','ㅎ','ㄲ','ㅋ','ㄺ']
     beeum = ['ㄴ','ㅁ']
     for i, r in enumerate(dec):
         r = [col for col in r if col.strip()]
@@ -50,7 +49,7 @@ def analysis_yueumhwa(text, dec):
     for i, r in enumerate(dec):
         r = [col for col in r if col.strip()]
         if len(r)!=3: continue
-        if i+1>len(dec): continue
+        if i+1>=len(dec): continue
 
         if r[2]=='ㄹ' and dec[i+1][0]=='ㄴ':
             yueumhwa.append(text[i:i+2])
@@ -73,6 +72,7 @@ def analysis_yeoneumhwa(text, dec):
         fdec = crud.difficulty.decomposition(forward)
         fdec = [col for col in fdec[-1] if col.strip()]
         if len(fdec)!=3: continue
+        if fdec[2]=='ㅇ': continue
         yeoneumhwa.append(forward+word)
     # 받침 뒤에 ㅏ, ㅓ, ㅗ, ㅜ, ㅟ로 시작하는 실질 형태소가 오는 경우
 
@@ -103,6 +103,7 @@ def anaylsis_gyeonumhwa(text, dec):
     # 용언의 어간 받침 ㄴ, ㅁ 뒤 ㄱ, ㄷ, ㅅ, ㅈ
     # VV(동사)[2]
     for i, (word, tag) in enumerate(pos):
+        print(word, tag)
         if tag == 'VV':
             wdec = crud.difficulty.decomposition(word)
             if wdec[-1][2] not in ['ㄴ','ㅁ']: continue
@@ -114,10 +115,9 @@ def anaylsis_gyeonumhwa(text, dec):
     # 관형사형 어미 -(으)ㄹ 뒤 ㄱ, ㄷ, ㅂ, ㅅ, ㅈ
     # ETM
     for i, (word, tag) in enumerate(pos):
-        print(tag)
         if 'ETM' in tag:
             wdec = crud.difficulty.decomposition(word)
-            if wdec[-1][2] not in ['ㄹ']: continue
+            if wdec[-1][0]!='ㅇ' or wdec[-1][2] != 'ㄹ': continue
             sdec = crud.difficulty.decomposition(pos[i+1][0])
 
             if sdec[0][0] not in n1list: continue
@@ -138,7 +138,7 @@ def doubleb_analysis(text, dec):
 
         # 받침 ㄱ,ㄷ,ㅂ 뒤 ㄱㄷㅂㅅㅈ
         if r[2] in doubleblist:
-            doubleb.append(text[i:i+2])
+            doubleb.append(text[i])
 
     return doubleb
 
