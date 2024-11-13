@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from typing import Dict
 import os
 from dotenv import load_dotenv
 import json
@@ -26,10 +27,16 @@ class ClaudeRequest(BaseModel):
     age: int = Field(default=11)
     rule: PronounceRule
     count: int = Field(default=5)
+    
 
 @app.post("/phonological_rules")
-async def analysis_pronounce(text: str):
-    return crud.pronounce.analysis_pronounce_crud(text)
+async def analysis_pronounce(text: Dict[int, str]):
+    analysis = {}
+    for n, t in text.items():
+        if not t:
+            raise HTTPException(status_code=400, detail="text에 빈 문자열이 포함되어 있습니다.")
+        analysis[n]=crud.pronounce.analysis_pronounce_crud(t)
+    return analysis
 
 @app.post("/claude")
 async def generate_claude(request: ClaudeRequest):
