@@ -51,6 +51,7 @@ def analysis_yueumhwa(text, dec):
         if len(r)!=3: continue
         if i+1>=len(dec): continue
 
+
         if r[2]=='ㄹ' and dec[i+1][0]=='ㄴ':
             yueumhwa.append(text[i:i+2])
         elif r[2]=='ㄴ' and dec[i+1][0]=='ㄹ':
@@ -103,7 +104,7 @@ def anaylsis_gyeonumhwa(text, dec):
     # 용언의 어간 받침 ㄴ, ㅁ 뒤 ㄱ, ㄷ, ㅅ, ㅈ
     # VV(동사)[2]
     for i, (word, tag) in enumerate(pos):
-        print(word, tag)
+
         if tag == 'VV':
             wdec = crud.difficulty.decomposition(word)
             if wdec[-1][2] not in ['ㄴ','ㅁ']: continue
@@ -118,6 +119,7 @@ def anaylsis_gyeonumhwa(text, dec):
         if 'ETM' in tag:
             wdec = crud.difficulty.decomposition(word)
             if wdec[-1][0]!='ㅇ' or wdec[-1][2] != 'ㄹ': continue
+
             sdec = crud.difficulty.decomposition(pos[i+1][0])
 
             if sdec[0][0] not in n1list: continue
@@ -139,6 +141,7 @@ def doubleb_analysis(text, dec):
         # 받침 ㄱ,ㄷ,ㅂ 뒤 ㄱㄷㅂㅅㅈ
         if r[2] in doubleblist:
             doubleb.append(text[i])
+
 
     return doubleb
 
