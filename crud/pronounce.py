@@ -3,6 +3,8 @@ import crud
 import crud.difficulty
 pecab = PeCab()
 
+# 음절의 끝소리 규칙
+
 def analysis_pronounce_crud(text):
     dec = crud.difficulty.decomposition(text)
     return {
@@ -73,7 +75,7 @@ def analysis_yeoneumhwa(text, dec):
         fdec = [col for col in fdec[-1] if col.strip()]
         if len(fdec)!=3: continue
         if fdec[2]=='ㅇ': continue
-        yeoneumhwa.append(forward+word)
+        yeoneumhwa.append(forward[-1]+word[0])
     # 받침 뒤에 ㅏ, ㅓ, ㅗ, ㅜ, ㅟ로 시작하는 실질 형태소가 오는 경우
 
     return yeoneumhwa
