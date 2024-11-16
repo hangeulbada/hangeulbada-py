@@ -34,6 +34,7 @@ def analysis_gugaeumhwa(text, dec):
 def analysis_beumhwa(text, dec):
     beumhwa=[]
     payeoleum = ['ㅂ','ㄷ','ㄱ', 'ㅍ','ㄼ','ㅄ','ㅅ','ㅆ','ㅈ','ㅊ','ㅎ','ㄲ','ㅋ','ㄺ']
+    payeoleum = ['ㅂ','ㄷ','ㄱ', 'ㅍ','ㄼ','ㅄ','ㅅ','ㅆ','ㅈ','ㅊ','ㅎ','ㄲ','ㅋ','ㄺ']
     beeum = ['ㄴ','ㅁ']
     for i, r in enumerate(dec):
         r = [col for col in r if col.strip()]

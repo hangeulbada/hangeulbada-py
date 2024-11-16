@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
 from typing import Dict
+from typing import Dict
 import os
 from dotenv import load_dotenv
 import json
@@ -27,6 +28,7 @@ class ClaudeRequest(BaseModel):
     age: int = Field(default=11)
     rule: PronounceRule
     count: int = Field(default=5)
+    
     
 
 @app.post("/phonological_rules")
