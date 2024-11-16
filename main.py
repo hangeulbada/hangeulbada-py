@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
 from typing import Dict
 import os
@@ -30,7 +30,17 @@ class ClaudeRequest(BaseModel):
     
 
 @app.post("/phonological_rules")
-async def analysis_pronounce(text: Dict[int, str]):
+async def analysis_pronounce(text: Dict[int, str] = Body(
+    example=
+            {
+                "1": "맏이가 동생을 돌보았다",
+                "2": "굳이 그렇게까지 할 필요는 없어",
+                "3": "해돋이를 보러 산에 올랐다",
+                "4": "옷이 낡아서 새로 샀다",
+                "5": "같이 영화 보러 갈래?"
+            }
+
+)):
     analysis = {}
     for n, t in text.items():
         if not t:
@@ -71,9 +81,10 @@ async def generate_claude(request: ClaudeRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+class DifficultyRequest(BaseModel):
+    text: str = Field("맏이가 동생을 돌보았다")
 @app.post("/difficulty")
-async def calc_difficulty(s: str):
+async def calc_difficulty(text: DifficultyRequest):
     b_grade={
         'ㄱ':2, 'ㄴ':2, 'ㄹ':2, 'ㅁ':2, 'ㅇ':2,
         'ㄷ':3, 'ㅂ':3, 'ㅅ':3, 'ㅈ':3,  'ㅎ':3, 'ㅆ':3,
@@ -92,11 +103,32 @@ async def calc_difficulty(s: str):
         'ㅒ':7, 'ㅠ':7,
     }
 
+    s = text.text
     b_list, m_list = difficulty_dec(s)
-    print(b_list, m_list)
     b_grade_sum = sum(b_grade.get(b) for b in b_list)
     m_grade_sum = sum(m_grade.get(m) for m in m_list)
     return b_grade_sum + m_grade_sum
+
+class ScoreRequest(BaseModel):
+    workbook: dict[int, str] = Field(description="문제집")
+    answer: str = Field(description="답안 S3 주소")
+
+
+@app.post("/score")
+async def score(score: ScoreRequest = Body(
+    example={
+        "workbook":
+            {
+                "1": "맏이가 동생을 돌보았다",
+                "2": "굳이 그렇게까지 할 필요는 없어",
+                "3": "해돋이를 보러 산에 올랐다",
+                "4": "옷이 낡아서 새로 샀다",
+                "5": "같이 영화 보러 갈래?"
+            },
+        "answer": "https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/1085767.png" 
+    }
+)):
+    return score
 
 
 @app.get("/")
@@ -110,12 +142,13 @@ if __name__ == "__main__":
 # uvicorn main:app --reload
 
 def difficulty_dec(s: str):
-    res = crud.difficultydecomposition(s)
+    res = crud.difficulty.decomposition(s)
     b_list = []
     m_list = []
     strip_list = [[col for col in row if col.strip()] for row in res]
 
     for i in strip_list:
+        if len(i)==0: continue
         m_list.append(i[1])
         if len(i) == 3:
             b_list.append(i[2])
