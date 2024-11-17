@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
-from typing import Dict, List
+from typing import Dict
 import os
 from dotenv import load_dotenv
 import json
@@ -79,8 +79,10 @@ async def generate_claude(request: ClaudeRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
 class DifficultyRequest(BaseModel):
     text: str = Field("맏이가 동생을 돌보았다")
+
 @app.post("/difficulty")
 async def calc_difficulty(text: DifficultyRequest):
     b_grade={
@@ -111,14 +113,7 @@ class ScoreRequest(BaseModel):
     workbook: dict[int, str] = Field(description="문제집")
     answer: str = Field(description="답안 S3 주소")
 
-class ScoreAnalysis(BaseModel):
-    question: str
-    answer: str
-    pronounce: List[str]
 
-class ScoreResponse(BaseModel):
-    score: int
-    analysis: List[ScoreAnalysis]
 
 
 @app.post("/score")
