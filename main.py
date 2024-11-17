@@ -1,14 +1,11 @@
 from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
-from typing import Dict
-from typing import Dict
+from typing import Dict, List
+
 import os
 from dotenv import load_dotenv
 import json
-import crud
-import crud.difficulty
-import crud.pronounce
-
+from crud import difficulty, pronounce, score
 
 app = FastAPI()
 load_dotenv()
@@ -47,7 +44,7 @@ async def analysis_pronounce(text: Dict[int, str] = Body(
     for n, t in text.items():
         if not t:
             raise HTTPException(status_code=400, detail="text에 빈 문자열이 포함되어 있습니다.")
-        analysis[n]=crud.pronounce.analysis_pronounce_crud(t)
+        analysis[n]=pronounce.pronounce_crud(t)
     return analysis
 
 @app.post("/claude")
@@ -115,9 +112,19 @@ class ScoreRequest(BaseModel):
     workbook: dict[int, str] = Field(description="문제집")
     answer: str = Field(description="답안 S3 주소")
 
+class ScoreAnalysis(BaseModel):
+    question: str
+    answer: str
+    pronounce: List[str]
+
+class ScoreResponse(BaseModel):
+    score: int
+    analysis: List[ScoreAnalysis]
+
 
 @app.post("/score")
-async def score(score: ScoreRequest = Body(
+async def score_endpoint(s: ScoreRequest = Body(
+
     example={
         "workbook":
             {
@@ -125,12 +132,23 @@ async def score(score: ScoreRequest = Body(
                 "2": "굳이 그렇게까지 할 필요는 없어",
                 "3": "해돋이를 보러 산에 올랐다",
                 "4": "옷이 낡아서 새로 샀다",
-                "5": "같이 영화 보러 갈래?"
+                "5": "같이 영화 보러 갈래?",
+                "6": "밥먹고 영화 할 사람?"
+
             },
         "answer": "https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/1085767.png" 
     }
 )):
-    return score
+    response = score.score_crud(s)
+    
+    # return {
+    #     "1": 80,
+    #     "2": 90,
+    #     "3": 47
+    # }
+
+    return response
+
 
 
 @app.get("/")
@@ -144,7 +162,8 @@ if __name__ == "__main__":
 # uvicorn main:app --reload
 
 def difficulty_dec(s: str):
-    res = crud.difficulty.decomposition(s)
+    res = difficulty.decomposition(s)
+
     b_list = []
     m_list = []
     strip_list = [[col for col in row if col.strip()] for row in res]

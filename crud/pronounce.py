@@ -5,7 +5,7 @@ pecab = PeCab()
 
 # 음절의 끝소리 규칙
 
-def analysis_pronounce_crud(text):
+def pronounce_crud(text):
     dec = crud.difficulty.decomposition(text)
     return {
         "구개음화": analysis_gugaeumhwa(text, dec),
@@ -106,7 +106,6 @@ def anaylsis_gyeonumhwa(text, dec):
     # 용언의 어간 받침 ㄴ, ㅁ 뒤 ㄱ, ㄷ, ㅅ, ㅈ
     # VV(동사)[2]
     for i, (word, tag) in enumerate(pos):
-        print(word, tag)
         if tag == 'VV':
             wdec = crud.difficulty.decomposition(word)
             if wdec[-1][2] not in ['ㄴ','ㅁ']: continue
