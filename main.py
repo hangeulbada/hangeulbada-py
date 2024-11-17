@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
 from typing import Dict, List
+
 import os
 from dotenv import load_dotenv
 import json
@@ -123,6 +124,7 @@ class ScoreResponse(BaseModel):
 
 @app.post("/score")
 async def score_endpoint(s: ScoreRequest = Body(
+
     example={
         "workbook":
             {
@@ -132,6 +134,7 @@ async def score_endpoint(s: ScoreRequest = Body(
                 "4": "옷이 낡아서 새로 샀다",
                 "5": "같이 영화 보러 갈래?",
                 "6": "밥먹고 영화 할 사람?"
+
             },
         "answer": "https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/1085767.png" 
     }
@@ -147,6 +150,7 @@ async def score_endpoint(s: ScoreRequest = Body(
     return response
 
 
+
 @app.get("/")
 async def root():
     return {"message": "한글바다 AI 서버입니다."}
@@ -159,6 +163,7 @@ if __name__ == "__main__":
 
 def difficulty_dec(s: str):
     res = difficulty.decomposition(s)
+
     b_list = []
     m_list = []
     strip_list = [[col for col in row if col.strip()] for row in res]
