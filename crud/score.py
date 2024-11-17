@@ -10,8 +10,7 @@ class ScoreResponse(BaseModel):
     score: int
     analysis: List[ScoreAnalysis]# from pydantic import List
 
-from main import ScoreRequest
-def score_crud(score: ScoreRequest):
+def score_crud(score):
     workbook = score.workbook
     answer = score.answer
     atext = ocr(answer)

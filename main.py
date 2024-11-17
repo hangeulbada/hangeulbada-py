@@ -113,9 +113,6 @@ class ScoreRequest(BaseModel):
     workbook: dict[int, str] = Field(description="문제집")
     answer: str = Field(description="답안 S3 주소")
 
-
-
-
 @app.post("/score")
 async def score_endpoint(s: ScoreRequest = Body(
     example={
