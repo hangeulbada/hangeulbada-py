@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, Field
-from typing import Dict, List
-
+from typing import Dict
 import os
 from dotenv import load_dotenv
 import json
@@ -80,8 +79,10 @@ async def generate_claude(request: ClaudeRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
 class DifficultyRequest(BaseModel):
     text: str = Field("맏이가 동생을 돌보았다")
+
 @app.post("/difficulty")
 async def calc_difficulty(text: DifficultyRequest):
     b_grade={
@@ -112,19 +113,11 @@ class ScoreRequest(BaseModel):
     workbook: dict[int, str] = Field(description="문제집")
     answer: str = Field(description="답안 S3 주소")
 
-class ScoreAnalysis(BaseModel):
-    question: str
-    answer: str
-    pronounce: List[str]
 
-class ScoreResponse(BaseModel):
-    score: int
-    analysis: List[ScoreAnalysis]
 
 
 @app.post("/score")
 async def score_endpoint(s: ScoreRequest = Body(
-
     example={
         "workbook":
             {
@@ -134,7 +127,6 @@ async def score_endpoint(s: ScoreRequest = Body(
                 "4": "옷이 낡아서 새로 샀다",
                 "5": "같이 영화 보러 갈래?",
                 "6": "밥먹고 영화 할 사람?"
-
             },
         "answer": "https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/1085767.png" 
     }
@@ -150,7 +142,6 @@ async def score_endpoint(s: ScoreRequest = Body(
     return response
 
 
-
 @app.get("/")
 async def root():
     return {"message": "한글바다 AI 서버입니다."}
@@ -163,7 +154,6 @@ if __name__ == "__main__":
 
 def difficulty_dec(s: str):
     res = difficulty.decomposition(s)
-
     b_list = []
     m_list = []
     strip_list = [[col for col in row if col.strip()] for row in res]

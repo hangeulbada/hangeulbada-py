@@ -1,6 +1,14 @@
 from crud import pronounce
-from main import ScoreAnalysis, ScoreResponse
-# from pydantic import List
+from pydantic import BaseModel
+from typing import List
+class ScoreAnalysis(BaseModel):
+    question: str
+    answer: str
+    pronounce: List[str]
+
+class ScoreResponse(BaseModel):
+    score: int
+    analysis: List[ScoreAnalysis]# from pydantic import List
 
 from main import ScoreRequest
 def score_crud(score: ScoreRequest):
