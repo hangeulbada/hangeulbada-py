@@ -110,7 +110,7 @@ def ocr(a):
         6: "밥머고 영화 볼 싸람?"
     }
 
-def simillarity(a):
+def simillarity(workbook, a):
     return {1: 90, 2:80, 3:100, 4:80, 5:100, 6:20}
     
 def extract_wa(workbook, atext):
