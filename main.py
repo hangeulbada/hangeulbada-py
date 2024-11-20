@@ -21,11 +21,9 @@ class PronounceRule(str, Enum):
     기식음화 = "기식음화"
 
 class ClaudeRequest(BaseModel):
-    difficulty: int = Field(default=11)
+    difficulty: int = Field(default=3)
     rule: PronounceRule
     count: int = Field(default=5)
-    
-    
 
 @app.post("/phonological_rules")
 async def analysis_pronounce(text: Dict[int, str] = Body(
@@ -60,7 +58,7 @@ async def generate_claude(request: ClaudeRequest):
             max_tokens=1000,
             # 다양한 결과값을 얻기 위해 temperature 값 조절
             temperature=0.5,
-            system="너는 음운 규칙별 받아쓰기 문제를 생성하는거야. 음운 규칙에는 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화가 있어.\n내가 'n 난이도로 [m]유형으로 k문제 만들어줘' 라고 하면 맞춰서 받아쓰기 문제를 만들어줘.\nn: 1~5 (초등학교 기준)\nm: 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화\nk: 1~15\n답변 형식:\n문제번호:문제 형태로 json형식으로 반환",
+            system="너는 음운 규칙별 받아쓰기 문제를 생성하는거야. 음운 규칙에는 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화가 있어.\n내가 'n 난이도로 [m]유형으로 k문제 만들어줘' 라고 하면 맞춰서 받아쓰기 문제를 만들어줘.\nn: 1~5 (초등학교 기준, 1: 단어, 2: 쉬운 단어가 있는 간단한 문장, 3: 쉬운 단어가 있는 짧은 문장, 4: 짧은 문장, 5: 문장)\nm: 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화\n답변 형식:\n문제번호:문제 형태로 json형식으로 반환",
             messages=[
                 {
                     "role": "user",
@@ -103,11 +101,23 @@ async def calc_difficulty(text: DifficultyRequest):
         'ㅒ':7, 'ㅠ':7,
     }
 
+    #pronounce 추출해서 해당하는 부분만 스코어링
     s = text.text
-    b_list, m_list = difficulty_dec(s)
+    analysis = pronounce.pronounce_crud(s)
+
+    spro = ''
+
+    for k, v in analysis.items():
+        if not v: continue
+        spro+=''.join(v)
+
+    b_list, m_list = difficulty_dec(spro)
     b_grade_sum = sum(b_grade.get(b) for b in b_list)
     m_grade_sum = sum(m_grade.get(m) for m in m_list)
-    return b_grade_sum + m_grade_sum
+    total = (b_grade_sum+m_grade_sum)//5
+    if total>5: total=5
+    if total<1: total=1
+    return total
 
 class ScoreRequest(BaseModel):
     workbook: dict[int, str] = Field(description="문제집")
