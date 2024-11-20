@@ -1,4 +1,5 @@
 from pecab import PeCab
+import re
 import crud
 import crud.difficulty
 pecab = PeCab()
@@ -6,7 +7,9 @@ pecab = PeCab()
 # 음절의 끝소리 규칙
 
 def pronounce_crud(text):
+    text = re.sub(r'[!"#$%&\'()*+,-./:;<=>?@\[\]^_\`{|}~\\\\]','', text)
     dec = crud.difficulty.decomposition(text)
+
     return {
         "구개음화": analysis_gugaeumhwa(text, dec),
         "비음화": analysis_beumhwa(text, dec),
