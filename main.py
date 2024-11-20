@@ -21,7 +21,7 @@ class PronounceRule(str, Enum):
     기식음화 = "기식음화"
 
 class ClaudeRequest(BaseModel):
-    age: int = Field(default=11)
+    difficulty: int = Field(default=11)
     rule: PronounceRule
     count: int = Field(default=5)
     
@@ -60,14 +60,14 @@ async def generate_claude(request: ClaudeRequest):
             max_tokens=1000,
             # 다양한 결과값을 얻기 위해 temperature 값 조절
             temperature=0.5,
-            system="너는 음운 규칙별 받아쓰기 문제를 생성하는거야. 음운 규칙에는 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화가 있어.\n내가 'n살 난이도로 [m]유형으로 k문제 만들어줘' 라고 하면 맞춰서 받아쓰기 문제를 만들어줘.\nn: 8~13 (초등학교 1학년~6학년)\nm: 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화\nk: 1~15\n답변 형식:\n문제번호:문제 형태로 json형식으로 반환",
+            system="너는 음운 규칙별 받아쓰기 문제를 생성하는거야. 음운 규칙에는 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화가 있어.\n내가 'n 난이도로 [m]유형으로 k문제 만들어줘' 라고 하면 맞춰서 받아쓰기 문제를 만들어줘.\nn: 1~5 (초등학교 기준)\nm: 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화\nk: 1~15\n답변 형식:\n문제번호:문제 형태로 json형식으로 반환",
             messages=[
                 {
                     "role": "user",
                     "content": [
                         {
                             "type": "text",
-                            "text": f"{request.age}살 난이도로 [{request.rule}] 유형으로 {request.count}문제 만들어줘. (seed: {datetime.now().isoformat()})"
+                            "text": f"{request.difficulty} 난이도로 [{request.rule}] 유형으로 {request.count}문제 만들어줘. (seed: {datetime.now().isoformat()})"
                         }
                     ]
                 }

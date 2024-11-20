@@ -13,13 +13,31 @@ class ScoreResponse(BaseModel):
 def score_crud(score):
     workbook = score.workbook
     answer = score.answer
+
+    """
+    ocr request
+    답안이 저장된 s3 주소 (string)
+    ocr response
+    {문제 번호(int): 답안(string), ..., 문제 번호: 답안}
+    """
     atext = ocr(answer)
-    ascore = simillarity(answer)
+
+    """
+    simillarity request
+    workbook
+    {문제 번호(int): 문제(string), ..., 문제 번호: 문제}
+    answer
+    {문제 번호(int): 문제(string), ..., 문제 번호: 문제}
+    
+    simillarity response
+    {문제 번호(int): 점수(int), ..., 문제 번호(int): 점수(int)}
+
+    """
+    ascore = simillarity(workbook, answer)
 
     # {1: [('맏이가', '마지가')], 2: [('굳이', '구지'), ('그렇게까지', '그러케까 지')], 4: [('새로', '세로')]}
     wrong_list = extract_wa(workbook, atext)
     wk = list(workbook)
-    print(wrong_list)
 
     response = {}
 
