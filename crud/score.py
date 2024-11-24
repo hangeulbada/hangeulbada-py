@@ -8,6 +8,7 @@ class ScoreAnalysis(BaseModel):
 
 class ScoreResponse(BaseModel):
     score: int
+    ocr_answer: str
     analysis: List[ScoreAnalysis]# from pydantic import List
 
 def score_crud(score):
@@ -44,7 +45,8 @@ def score_crud(score):
     for i in range(wk[0], wk[-1]+1):
         sa=[]
         if i not in wrong_list:
-            sr = ScoreResponse(score=ascore[i], analysis=[])
+            print("!!!!!!", ascore[i], atext[i])
+            sr = ScoreResponse(score=ascore[i], ocr_answer=atext[i], analysis=[])
             response[i] = sr
             continue
 
@@ -59,7 +61,7 @@ def score_crud(score):
             sa.append(ScoreAnalysis(question=saq, answer=saa, pronounce=sap))
             print(sa)
 
-        sr = ScoreResponse(score=ascore[i], analysis=sa)
+        sr = ScoreResponse(score=ascore[i], ocr_answer=atext[i], analysis=sa)
         # print(sr)
 
         response[i] = sr
