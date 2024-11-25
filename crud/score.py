@@ -6,14 +6,19 @@ class ScoreAnalysis(BaseModel):
     answer: str
     pronounce: List[str]
 
-class ScoreResponse(BaseModel):
-    score: int
+class ScoreMeta(BaseModel):
+    num: int
+    simillarity: int
     ocr_answer: str
     analysis: List[ScoreAnalysis]# from pydantic import List
+
+class ScoreResponse(BaseModel):
+    answers: List[ScoreMeta]
 
 def score_crud(score):
     workbook = score.workbook
     answer = score.answer
+    answers = []
 
     """
     ocr request
@@ -46,8 +51,8 @@ def score_crud(score):
         sa=[]
         if i not in wrong_list:
             print("!!!!!!", ascore[i], atext[i])
-            sr = ScoreResponse(score=ascore[i], ocr_answer=atext[i], analysis=[])
-            response[i] = sr
+            sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=[])
+            answers.append(sr)
             continue
 
         for w in wrong_list[i]:
@@ -61,12 +66,12 @@ def score_crud(score):
             sa.append(ScoreAnalysis(question=saq, answer=saa, pronounce=sap))
             print(sa)
 
-        sr = ScoreResponse(score=ascore[i], ocr_answer=atext[i], analysis=sa)
+        sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=sa)
         # print(sr)
-
-        response[i] = sr
+        answers.append(sr)
+        
     
-    return response
+    return ScoreResponse(answers=answers)
 
     """
         1:{
