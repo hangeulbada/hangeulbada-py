@@ -8,7 +8,7 @@ class ScoreAnalysis(BaseModel):
 
 class ScoreMeta(BaseModel):
     num: int
-    score: int
+    simillarity: int
     ocr_answer: str
     analysis: List[ScoreAnalysis]# from pydantic import List
 
@@ -51,7 +51,7 @@ def score_crud(score):
         sa=[]
         if i not in wrong_list:
             print("!!!!!!", ascore[i], atext[i])
-            sr = ScoreMeta(num=i, score=ascore[i], ocr_answer=atext[i], analysis=[])
+            sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=[])
             answers.append(sr)
             continue
 
@@ -66,7 +66,7 @@ def score_crud(score):
             sa.append(ScoreAnalysis(question=saq, answer=saa, pronounce=sap))
             print(sa)
 
-        sr = ScoreMeta(num=i, score=ascore[i], ocr_answer=atext[i], analysis=sa)
+        sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=sa)
         # print(sr)
         answers.append(sr)
         
