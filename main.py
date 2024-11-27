@@ -112,12 +112,33 @@ async def calc_difficulty(text: DifficultyRequest):
         spro+=''.join(v)
 
     b_list, m_list = difficulty_dec(spro)
+    if not len(spro): spro='0'
+
+    # 정규화 필요
     b_grade_sum = sum(b_grade.get(b) for b in b_list)
     m_grade_sum = sum(m_grade.get(m) for m in m_list)
     total = (b_grade_sum+m_grade_sum)//5
+    # print(b_grade_sum+m_grade_sum, len(s), len(spro), total)
     if total>5: total=5
     if total<1: total=1
     return total
+
+    # total_score = b_grade_sum + m_grade_sum
+    # normalized_score = total_score / (len(s)*4)
+    
+    # difficulty_thresholds = [
+    #     (1, 0.05),   # 20% 이하
+    #     (2, 0.1),   # 40% 이하
+    #     (3, 0.2),   # 60% 이하
+    #     (4, 0.35),   # 80% 이하
+    #     (5, 0.5)    # 100% 이하
+    # ]
+    
+    # for difficulty, threshold in difficulty_thresholds:
+    #     if normalized_score <= threshold:
+    #         print(normalized_score)
+    #         return difficulty
+    # return difficulty
 
 class ScoreRequest(BaseModel):
     workbook: dict[int, str] = Field(description="문제집")
