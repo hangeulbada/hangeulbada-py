@@ -1,5 +1,5 @@
 from crud import pronounce
-from crud import ocr
+from crud import ocr, levenshtein
 from pydantic import BaseModel
 from typing import List
 class ScoreAnalysis(BaseModel):
@@ -27,11 +27,8 @@ def score_crud(score):
     ocr response
     {문제 번호(int): 답안(string), ..., 문제 번호: 답안}
     """
-    print('before atext')
     atext = ocr.infer_ocr(filepath=answer_url)
-    print('atext', atext)
     atext = atext['results']
-    print(atext)
 
     """
     simillarity request
@@ -44,7 +41,7 @@ def score_crud(score):
     {문제 번호(int): 점수(int), ..., 문제 번호(int): 점수(int)}
 
     """
-    ascore = simillarity(workbook, answer_url)
+    ascore = simillarity(workbook, atext)
 
     # {1: [('맏이가', '마지가')], 2: [('굳이', '구지'), ('그렇게까지', '그러케까 지')], 4: [('새로', '세로')]}
     wrong_list = extract_wa(workbook, atext)
@@ -64,7 +61,7 @@ def score_crud(score):
             continue
 
         for w in wrong_list[i]:
-            print(w)
+            # print(w)
             q = w[0]
             a = w[1]
             saq = q
@@ -72,7 +69,7 @@ def score_crud(score):
             sap = analysis_wrong(q, a)
 
             sa.append(ScoreAnalysis(question=saq, answer=saa, pronounce=sap))
-            print(sa)
+            # print(sa)
 
         sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=sa)
         answers.append(sr)
@@ -80,8 +77,12 @@ def score_crud(score):
     
     return ScoreResponse(answers=answers)
 
-def simillarity(workbook, a):
-    return {1: 90, 2:80, 3:100, 4:80}
+def simillarity(workbook, answer):
+    res = {}
+    for i in range(list(workbook.keys())[0],list(workbook.keys())[-1]+1):
+        sim = levenshtein.jamo_similarity(workbook[i], answer[i])
+        res[i] = int(sim*100)
+    return res
     
 def extract_wa(workbook, atext):
     wrong = {}

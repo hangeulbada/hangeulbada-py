@@ -153,12 +153,11 @@ class ScoreRequest(BaseModel):
 async def score_endpoint(s: ScoreRequest = Body(
     example={
         "workbook": {
-            "1": "바나나",
-            "2": "바나나",
-            "3": "딸기",
-            "4": "사과"
+            "1": "시끌벅적한 소리가",
+            "2": "힘차게 밟았다",
+            "3": "아까부터 그랬단다"
         },
-        "answer": "https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/113113245154998373637_674597209c4bd406dbe3f8da.jpeg"
+        "answer": "https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/117398116290476725816_66b9f0945dd57334d0755ca4.png"
         }
 )):
     response = score.score_crud(s)
@@ -196,5 +195,28 @@ def difficulty_dec(s: str):
     return b_list, m_list
 
 @app.get('/ocr', tags=['AI'], summary="디버깅용")
-async def ocr_endpoint(filepath: str=Query(default="https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/113113245154998373637_674597209c4bd406dbe3f8da.jpeg",description="s3 파일 주소")):
+async def ocr_endpoint(filepath: str=Query(default="https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/117398116290476725816_66b9f0945dd57334d0755ca4.png",description="s3 파일 주소")):
     return ocr.infer_ocr(filepath)
+
+
+class LevenRequest(BaseModel):
+    workbook: dict[int, str] = Field(description="문제집")
+    answer: dict[int, str] = Field(description="답안")
+
+
+@app.post('/levenshtein', tags=['AI'], summary='디버깅용')
+async def leven_endpoint(req: LevenRequest = Body(
+    example={
+        "workbook": {
+            1: "시끌벅적한 소리가",
+            2: "힘차게 밟았다",
+            3: "아까부터 그랬단다"
+        },
+        "answer":{
+            1: "시끌벅적한 소리가",
+            2: "차게 밟았다.",
+            3: "아까부터 그렀단다."
+        }
+    }
+)):
+    return score.simillarity(workbook=req.workbook, answer=req.answer)
