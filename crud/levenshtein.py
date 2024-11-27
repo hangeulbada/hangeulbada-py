@@ -31,8 +31,8 @@ def jamo_similarity(word1, word2):
     jamo1 = list(itertools.chain.from_iterable(decomposition(word1)))
     jamo2 = list(itertools.chain.from_iterable(decomposition(word2)))
 
-    print(jamo1)
-    print(jamo2)
+    # print(jamo1)
+    # print(jamo2)
     
     # 자모 유사도와 초성 유사도 계산
     jamo_similarity = 1 - (levenshtein_distance(jamo1, jamo2) / max(len(jamo1), len(jamo2)))
