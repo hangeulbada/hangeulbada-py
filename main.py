@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, Query
 from pydantic import BaseModel, Field
 from typing import Dict
 import os
 from dotenv import load_dotenv
 import json
-from crud import difficulty, pronounce, score
+from crud import difficulty, pronounce, score, ocr
 
 app = FastAPI()
 load_dotenv()
@@ -25,7 +25,7 @@ class ClaudeRequest(BaseModel):
     rule: PronounceRule
     count: int = Field(default=5, ge=1, le=20)
 
-@app.post("/phonological_rules")
+@app.post("/phonological_rules", tags=['analysis'])
 async def analysis_pronounce(text: Dict[int, str] = Body(
     example=
             {
@@ -44,7 +44,7 @@ async def analysis_pronounce(text: Dict[int, str] = Body(
         analysis[n]=pronounce.pronounce_crud(t)
     return analysis
 
-@app.post("/claude")
+@app.post("/claude", tags=['AI'])
 async def generate_claude(request: ClaudeRequest):
     try:
         import anthropic
@@ -81,7 +81,7 @@ async def generate_claude(request: ClaudeRequest):
 class DifficultyRequest(BaseModel):
     text: str = Field("맏이가 동생을 돌보았다")
 
-@app.post("/difficulty")
+@app.post("/difficulty", tags=['analysis'])
 async def calc_difficulty(text: DifficultyRequest):
     b_grade={
         'ㄱ':2, 'ㄴ':2, 'ㄹ':2, 'ㅁ':2, 'ㅇ':2,
@@ -105,6 +105,10 @@ async def calc_difficulty(text: DifficultyRequest):
     s = text.text
     analysis = pronounce.pronounce_crud(s)
 
+    ab_list, am_list = difficulty_dec(s)
+    tsum = sum(b_grade.get(ab) for ab in ab_list) 
+    tsum += sum(m_grade.get(am) for am in am_list)
+
     spro = ''
 
     for k, v in analysis.items():
@@ -112,31 +116,50 @@ async def calc_difficulty(text: DifficultyRequest):
         spro+=''.join(v)
 
     b_list, m_list = difficulty_dec(spro)
+    if not len(spro): spro='0'
+
+    # 정규화 필요
     b_grade_sum = sum(b_grade.get(b) for b in b_list)
     m_grade_sum = sum(m_grade.get(m) for m in m_list)
-    total = (b_grade_sum+m_grade_sum)//5
-    if total>5: total=5
-    if total<1: total=1
-    return total
+    total = (b_grade_sum+m_grade_sum)/(tsum)
+
+    difficulty_thresholds = [
+        (1, 0.05),   # 20% 이하
+        (2, 0.1),   # 40% 이하
+        (3, 0.3),   # 60% 이하
+        (4, 0.5),   # 80% 이하
+        (5, 0.7)    # 100% 이하
+    ]
+    
+    for difficulty, threshold in difficulty_thresholds:
+        if total <= threshold:
+            if len(s)<5:
+                difficulty-=3
+                difficulty = max(1, difficulty)
+            elif len(s)<8:
+                difficulty-=2
+                difficulty = max(1, difficulty)
+            elif len(s)>10:
+                difficulty+=1
+                difficulty = min(5, difficulty)
+            return difficulty
+    return difficulty
 
 class ScoreRequest(BaseModel):
     workbook: dict[int, str] = Field(description="문제집")
     answer: str = Field(description="답안 S3 주소")
 
-@app.post("/score")
+@app.post("/score", tags=['analysis'])
 async def score_endpoint(s: ScoreRequest = Body(
     example={
-        "workbook":
-            {
-                "1": "맏이가 동생을 돌보았다",
-                "2": "굳이 그렇게까지 할 필요는 없어",
-                "3": "해돋이를 보러 산에 올랐다",
-                "4": "옷이 낡아서 새로 샀다",
-                "5": "같이 영화 보러 갈래?",
-                "6": "밥먹고 영화 할 사람?"
-            },
-        "answer": "https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/1085767.png" 
-    }
+        "workbook": {
+            "1": "바나나",
+            "2": "바나나",
+            "3": "딸기",
+            "4": "사과"
+        },
+        "answer": "https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/113113245154998373637_674597209c4bd406dbe3f8da.jpeg"
+        }
 )):
     response = score.score_crud(s)
     
@@ -171,3 +194,7 @@ def difficulty_dec(s: str):
         if len(i) == 3:
             b_list.append(i[2])
     return b_list, m_list
+
+@app.get('/ocr', tags=['AI'], summary="디버깅용")
+async def ocr_endpoint(filepath: str=Query(default="https://bada-static-bucket.s3.ap-northeast-2.amazonaws.com/113113245154998373637_674597209c4bd406dbe3f8da.jpeg",description="s3 파일 주소")):
+    return ocr.infer_ocr(filepath)
