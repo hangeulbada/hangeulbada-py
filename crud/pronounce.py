@@ -164,3 +164,5 @@ def geosensori_analysis(text, dec):
             geosensori.append(text[i:i+2])
 
     return geosensori
+
+

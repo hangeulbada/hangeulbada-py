@@ -21,9 +21,9 @@ class PronounceRule(str, Enum):
     기식음화 = "기식음화"
 
 class ClaudeRequest(BaseModel):
-    difficulty: int = Field(default=3)
+    difficulty: int = Field(default=3, ge=1, le=5)
     rule: PronounceRule
-    count: int = Field(default=5)
+    count: int = Field(default=5, ge=1, le=20)
 
 @app.post("/phonological_rules")
 async def analysis_pronounce(text: Dict[int, str] = Body(
