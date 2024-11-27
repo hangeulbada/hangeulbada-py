@@ -51,6 +51,7 @@ def group_text_by_coord(texts, coordinates, y_threshold=40):
 
 
 def text_preprocess(infer_text, first_coord, coord, y_thres):
+    """ Text Preprocessing """
     number_count = 0
     number_list = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20']
     output_text = []
@@ -96,6 +97,7 @@ def text_preprocess(infer_text, first_coord, coord, y_thres):
 
 
 def infer_ocr(filepath): # `filepath` is S3 Path
+    """ Inference OCR Using Image File Path """
     # Initialize EasyOCR Reader
     reader = easyocr.Reader(
         ['ko'], 
@@ -105,10 +107,10 @@ def infer_ocr(filepath): # `filepath` is S3 Path
         download_enabled=False,
     )
 
-    # OCR 수행
+    # Inference OCR
     result = reader.readtext(filepath, width_ths=0.2)
     
-    # Confidence Threshold 값 정의
+    # Define Confidence Threshold
     conf_thres = 0.1
     
     coord = []
