@@ -1,4 +1,5 @@
 from crud import pronounce
+from crud import ocr
 from pydantic import BaseModel
 from typing import List
 class ScoreAnalysis(BaseModel):
@@ -17,7 +18,7 @@ class ScoreResponse(BaseModel):
 
 def score_crud(score):
     workbook = score.workbook
-    answer = score.answer
+    answer_url = score.answer
     answers = []
 
     """
@@ -26,7 +27,11 @@ def score_crud(score):
     ocr response
     {문제 번호(int): 답안(string), ..., 문제 번호: 답안}
     """
-    atext = ocr(answer)
+    print('before atext')
+    atext = ocr.infer_ocr(filepath=answer_url)
+    print('atext', atext)
+    atext = atext['results']
+    print(atext)
 
     """
     simillarity request
@@ -39,18 +44,21 @@ def score_crud(score):
     {문제 번호(int): 점수(int), ..., 문제 번호(int): 점수(int)}
 
     """
-    ascore = simillarity(workbook, answer)
+    ascore = simillarity(workbook, answer_url)
 
     # {1: [('맏이가', '마지가')], 2: [('굳이', '구지'), ('그렇게까지', '그러케까 지')], 4: [('새로', '세로')]}
     wrong_list = extract_wa(workbook, atext)
-    wk = list(workbook)
 
-    response = {}
+    # 틀린게 없는 경우
+    if not len(wrong_list): 
+        for i in atext.keys():
+            sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=[])
+        answers.append(sr)
 
-    for i in range(wk[0], wk[-1]+1):
+    # 혼합된 경우 완전탐색
+    for i in range(list(atext.keys())[0], list(atext.keys())[-1]+1):
         sa=[]
-        if i not in wrong_list:
-            print("!!!!!!", ascore[i], atext[i])
+        if i not in wrong_list and i<len(ascore) and i<len(atext):
             sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=[])
             answers.append(sr)
             continue
@@ -67,58 +75,13 @@ def score_crud(score):
             print(sa)
 
         sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=sa)
-        # print(sr)
         answers.append(sr)
         
     
     return ScoreResponse(answers=answers)
 
-    """
-        1:{
-            "score": 70
-            "analysis": [
-                {
-                    "question": "맏이가",
-                    "answer": "마지가",
-                    "pronounce": ["구개음화", "연음화"]
-                },
-                {
-                    "question": "맏이가",
-                    "answer": "마지가",
-                    "pronounce": ["구개음화", "연음화"]
-                }
-            ]
-        }
-        2:{
-            "score": 80
-            "analysis": [
-                {
-                    "question": "맏이가",
-                    "answer": "마지가",
-                    "pronounce": ["구개음화", "연음화"]
-                },
-                {
-                    "question": "맏이가",
-                    "answer": "마지가",
-                    "pronounce": ["구개음화", "연음화"]
-                }
-            ]
-        },
-        3: {"score": 100, "analysis": []}
-    """
-
-def ocr(a):
-    return{
-        1: "마지가 동생을 돌보았다",
-        2: "구지 그러케까지 할 필요는 없어",
-        3: "해돋이를 보러 산에 올랐다",
-        4: "옷이 낡아서 세로 샀다",
-        5: "같이 영화 보러 갈래?",
-        6: "밥머고 영화 볼 싸람?"
-    }
-
 def simillarity(workbook, a):
-    return {1: 90, 2:80, 3:100, 4:80, 5:100, 6:20}
+    return {1: 90, 2:80, 3:100, 4:80}
     
 def extract_wa(workbook, atext):
     wrong = {}
@@ -143,4 +106,3 @@ def analysis_wrong(q, a):
 
     if not len(plist): return ['음운규칙 없음']
     return plist
-

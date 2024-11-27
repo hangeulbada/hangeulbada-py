@@ -142,6 +142,6 @@ def infer_ocr(filepath): # `filepath` is S3 Path
     infer_proc_text = {}
     for i, group in enumerate(grouped_texts):
         tmp = " ".join(group)
-        infer_proc_text[str(i + 1)] = tmp
+        infer_proc_text[i + 1] = tmp
 
     return {"results": infer_proc_text}
