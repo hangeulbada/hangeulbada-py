@@ -69,7 +69,7 @@ def score_crud(score):
             sap = analysis_wrong(q, a)
 
             sa.append(ScoreAnalysis(question=saq, answer=saa, pronounce=sap))
-            # print(sa)
+            print(sa)
 
         sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=sa)
         answers.append(sr)
@@ -83,16 +83,16 @@ def simillarity(workbook, answer):
         sim = levenshtein.jamo_similarity(workbook[i], answer[i])
         res[i] = int(sim*100)
     return res
-    
+
+# 틀린 부분 찾기
 def extract_wa(workbook, atext):
+    print(workbook, atext)
     wrong = {}
-    wk = list(workbook)
-    for i in range(wk[0], wk[-1]+1):
+    for i in range(list(workbook.keys())[0],list(workbook.keys())[-1]+1):
         if i not in atext.keys(): continue
         wlist = workbook[i].split()
         alist = atext[i].split()
-        
-        for j in range(max(len(wlist), len(alist))):
+        for j in range(min(len(wlist), len(alist))):
             if wlist[j]!=alist[j]:
                 if i not in wrong: wrong[i]=[]
                 wrong[i].append((wlist[j], alist[j]))
