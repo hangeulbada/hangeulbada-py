@@ -55,11 +55,11 @@ def score_crud(score):
     # 혼합된 경우 완전탐색
     for i in range(list(atext.keys())[0], list(atext.keys())[-1]+1):
         sa=[]
-        if i not in wrong_list and i<len(ascore) and i<len(atext):
+        if i not in wrong_list.keys() and i<=len(ascore) and i<=len(atext):
             sr = ScoreMeta(num=i, simillarity=ascore[i], ocr_answer=atext[i], analysis=[])
             answers.append(sr)
             continue
-
+        # print("www", i, wrong_list[i])
         for w in wrong_list[i]:
             # print(w)
             q = w[0]
@@ -86,10 +86,8 @@ def simillarity(workbook, answer):
 
 # 틀린 부분 찾기
 def extract_wa(workbook, atext):
-    print(workbook, atext)
     wrong = {}
     for i in range(list(workbook.keys())[0],list(workbook.keys())[-1]+1):
-        if i not in atext.keys(): continue
         wlist = workbook[i].split()
         alist = atext[i].split()
         for j in range(min(len(wlist), len(alist))):
