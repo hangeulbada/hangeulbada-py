@@ -58,7 +58,12 @@ async def generate_claude(request: ClaudeRequest):
             max_tokens=1000,
             # 다양한 결과값을 얻기 위해 temperature 값 조절
             temperature=0.5,
-            system="너는 음운 규칙별 받아쓰기 문제를 생성하는거야. 음운 규칙에는 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화가 있어.\n내가 'n 난이도로 [m]유형으로 k문제 만들어줘' 라고 하면 맞춰서 받아쓰기 문제를 만들어줘.\nn: 1~5 (초등학교 기준, 1: 단어, 2: 쉬운 단어가 있는 간단한 문장, 3: 쉬운 단어가 있는 짧은 문장, 4: 짧은 문장, 5: 문장)\nm: 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화\n답변 형식:\n문제번호:문제 형태로 json형식으로 반환",
+            system="""너는 음운 규칙별 받아쓰기 문제를 생성하는거야. 
+                    음운 규칙에는 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화가 있어.\n
+                    내가 'n 난이도로 [m]유형으로 k문제 만들어줘' 라고 하면 맞춰서 받아쓰기 문제를 만들어줘.\n
+                    n: 1~5 (초등학교 기준, 1: 단어, 2: 쉬운 단어가 있는 간단한 문장, 3: 쉬운 단어가 있는 짧은 문장, 4: 짧은 문장, 5: 문장)\n
+                    m: 구개음화, 연음화, 경음화, 유음화, 비음화, 음운규칙 없음, 겹받침 쓰기, 기식음화\n
+                    답변 형식: 문제번호:문제 형태로 json형식으로 반환""",
             messages=[
                 {
                     "role": "user",
@@ -81,6 +86,11 @@ async def generate_claude(request: ClaudeRequest):
 class DifficultyRequest(BaseModel):
     text: str = Field("맏이가 동생을 돌보았다")
 
+@app.post('/difficulties', tags=['analysis'], summary='디버깅용')
+async def difficulties_endpoint(texts: list[DifficultyRequest]):
+    print(texts)
+    return [await calc_difficulty(t) for t in texts]
+
 @app.post("/difficulty", tags=['analysis'])
 async def calc_difficulty(text: DifficultyRequest):
     b_grade={
@@ -101,7 +111,7 @@ async def calc_difficulty(text: DifficultyRequest):
         'ㅒ':7, 'ㅠ':7,
     }
 
-    #pronounce 추출해서 해당하는 부분만 스코어링
+    # pronounce 추출해서 해당하는 부분만 스코어링
     s = text.text
     analysis = pronounce.pronounce_crud(s)
 
@@ -121,29 +131,30 @@ async def calc_difficulty(text: DifficultyRequest):
     # 정규화 필요
     b_grade_sum = sum(b_grade.get(b) for b in b_list)
     m_grade_sum = sum(m_grade.get(m) for m in m_list)
-    total = (b_grade_sum+m_grade_sum)/(tsum)
+    total = (b_grade_sum+m_grade_sum)/((tsum)+len(s))
 
     difficulty_thresholds = [
         (1, 0.05),   # 20% 이하
         (2, 0.1),   # 40% 이하
-        (3, 0.3),   # 60% 이하
+        (3, 0.35),   # 60% 이하
         (4, 0.5),   # 80% 이하
         (5, 0.7)    # 100% 이하
     ]
     
     for difficulty, threshold in difficulty_thresholds:
         if total <= threshold:
-            if len(s)<5:
+            if len(s)<=3:
                 difficulty-=3
-                difficulty = max(1, difficulty)
-            elif len(s)<8:
+            elif len(s)<=5:
                 difficulty-=2
-                difficulty = max(1, difficulty)
-            elif len(s)>10:
+            elif len(s)<=7:
+                difficulty-=1
+            elif len(s)>=9:
                 difficulty+=1
-                difficulty = min(5, difficulty)
-            return difficulty
-    return difficulty
+            elif len(s)>=13:
+                difficulty+=2
+            return max(1, min(5, difficulty))
+    return max(1, min(5, difficulty))
 
 class ScoreRequest(BaseModel):
     workbook: dict[int, str] = Field(description="문제집")
